@@ -23,8 +23,8 @@ import { useTranslation } from "react-i18next";
 import { ListChecks, MousePointerClick } from "lucide-react";
 import AuthBar from "./components/AuthBar";
 import { setAppLanguage } from "./i18n";
+import { apiUrl } from "./lib/api";
 
-const API_BASE = "";
 const IS_DEV = import.meta.env.DEV;
 const NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 2,
@@ -709,7 +709,7 @@ export default function App() {
         form.append("file", file);
 
         const res = await fetch(
-          `${API_BASE}/api/preview?limit=25&lang=${i18n.language}`,
+          apiUrl(`/api/preview?limit=25&lang=${i18n.language}`),
           {
             method: "POST",
             body: form,
@@ -772,7 +772,7 @@ export default function App() {
       const form = new FormData();
       form.append("file", file);
 
-      const res = await fetch(`${API_BASE}/api/clean?lang=${i18n.language}`, {
+      const res = await fetch(apiUrl(`/api/clean?lang=${i18n.language}`), {
         method: "POST",
         body: form,
       });

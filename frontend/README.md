@@ -2,6 +2,26 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Deploy (Vercel + External API)
+
+If your frontend is deployed on Vercel but backend is deployed elsewhere, set:
+
+`VITE_API_BASE=https://lunagrid.vercel.app/`
+
+Example:
+
+`VITE_API_BASE=https://etl-price-cleaner-api.onrender.com`
+
+The app will call:
+
+- `/api/preview`
+- `/api/clean`
+- `/api/report/preview`
+- `/api/report/clean`
+- `/api/auth/*`
+
+using the `VITE_API_BASE` prefix in production.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
