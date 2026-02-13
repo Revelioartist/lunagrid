@@ -300,7 +300,7 @@ const UI = {
   muted: "text-slate-600 dark:text-white/60",
   muted2: "text-slate-700 dark:text-white/70",
   panel:
-    "rounded-3xl border p-5 " +
+    "rounded-3xl border p-4 sm:p-5 " +
     "border-slate-200/70 bg-white/70 " +
     "dark:border-white/10 dark:bg-[#080E1E]/89",
   panel2:
@@ -315,17 +315,17 @@ const UI = {
 
 function DataTable({ title, headers, rows }) {
   return (
-    <div className={cn("mt-6 overflow-hidden", UI.panel2)}>
-      <div className="px-4 py-3 font-semibold">{title}</div>
+    <div className={cn("mt-4 overflow-hidden sm:mt-6", UI.panel2)}>
+      <div className="px-3 py-2.5 text-sm font-semibold sm:px-4 sm:py-3 sm:text-base">{title}</div>
       <div className="overflow-auto max-h-[380px]">
-        <table className="min-w-full text-sm">
+        <table className="min-w-full text-xs sm:text-sm">
           <thead className="sticky top-0 bg-slate-100/90 dark:bg-slate-950/60">
             <tr>
               {headers?.map((h, i) => (
                 <th
                   key={i}
                   className={cn(
-                    "text-left px-3 py-2 whitespace-nowrap border-b",
+                    "text-left px-2 py-2 whitespace-nowrap border-b sm:px-3",
                     "border-slate-200/70 text-slate-600",
                     "dark:border-white/10 dark:text-white/70"
                   )}
@@ -342,7 +342,7 @@ function DataTable({ title, headers, rows }) {
                   <td
                     key={ci}
                     className={cn(
-                      "px-3 py-2 whitespace-nowrap border-b",
+                      "px-2 py-2 whitespace-nowrap border-b sm:px-3",
                       "border-slate-200/70 text-slate-800",
                       "dark:border-white/10 dark:text-white/80"
                     )}
@@ -354,7 +354,7 @@ function DataTable({ title, headers, rows }) {
             ))}
             {!rows?.length && (
               <tr>
-                <td colSpan={headers?.length || 1} className={cn("px-4 py-6", UI.muted)}>
+                <td colSpan={headers?.length || 1} className={cn("px-3 py-6 sm:px-4", UI.muted)}>
                   No data
                 </td>
               </tr>
@@ -379,7 +379,7 @@ function StatBox({ label, value, tone = "neutral" }) {
   return (
     <div className={cn("rounded-2xl border px-4 py-3", toneCls)}>
       <div className="text-xs opacity-75">{label}</div>
-      <div className="mt-1 text-base font-semibold">{value}</div>
+      <div className="mt-1 text-sm font-semibold sm:text-base">{value}</div>
     </div>
   );
 }
@@ -779,15 +779,15 @@ export default function ReportPrice() {
 
   return (
     <div className="min-h-screen text-slate-900 dark:text-white">
-      <div className="i18n-swap-layer max-w-5xl mx-auto px-4 pb-16">
+      <div className="i18n-swap-layer max-w-5xl mx-auto px-4 pb-12 sm:px-5 sm:pb-16">
         {/* Header */}
-        <div className="pt-10 flex items-start justify-between gap-4">
+        <div className="pt-8 flex flex-col gap-4 sm:pt-10 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="text-xl font-semibold">{`${t("rpTitle")} ${t("rpSubtitle")}`}</div>
             <div className={cn("mt-1 text-sm", UI.muted)}>{t("rpSteps")}</div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 md:w-auto md:justify-end">
             <LangToggle />
             <ModeToggle />
             <AuthBar />
@@ -830,7 +830,7 @@ export default function ReportPrice() {
               </button>
             </div>
 
-            <div className={cn("ml-2 text-sm", UI.muted2)}>{t("botRate")}</div>
+            <div className={cn("text-sm sm:ml-2", UI.muted2)}>{t("botRate")}</div>
 
             <button
               onClick={() => setIncludeBot((v) => !v)}
@@ -875,7 +875,7 @@ export default function ReportPrice() {
             tabIndex={0}
             aria-label={t("chooseFile")}
             className={cn(
-              "mt-4 rounded-2xl border p-4 flex items-center gap-4 transition cursor-pointer",
+              "mt-4 rounded-2xl border p-4 flex flex-col items-start gap-3 transition cursor-pointer sm:flex-row sm:items-center sm:gap-4",
               "border-slate-200/70 bg-white/60 dark:border-white/10 dark:bg-[#080E1E]/89",
               dragOver && "ring-2 ring-emerald-400/60 shadow-[0_0_25px_rgba(52,211,153,0.25)]",
               file && !dragOver && "shadow-[0_0_25px_rgba(52,211,153,0.12)]"
@@ -898,12 +898,12 @@ export default function ReportPrice() {
               {file && (
                 <div className={cn("mt-2", UI.chip)}>
                   <span>{t("selected")}:</span>
-                  <span className="font-semibold">{file.name}</span>
+                  <span className="max-w-[210px] truncate font-semibold sm:max-w-[320px]">{file.name}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:items-end">
               <div className={cn("text-xs rounded-xl border px-3 py-1.5 flex items-center gap-2",
                 dragOver
                   ? "border-emerald-400/60 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200"
@@ -945,7 +945,7 @@ export default function ReportPrice() {
               onClick={handleDownload}
               disabled={!file || selected.size === 0 || loadingDownload}
               className={cn(
-                "px-5 py-2.5 rounded-2xl border font-semibold text-sm transition flex items-center gap-2",
+                "w-full justify-center px-5 py-2.5 rounded-2xl border font-semibold text-sm transition flex items-center gap-2 sm:w-auto",
                 !file || selected.size === 0 || loadingDownload
                   ? "bg-black/5 border-slate-200/70 text-slate-400 dark:bg-[#080E1E]/89 dark:border-white/10 dark:text-white/40"
                   : "bg-emerald-500/15 border-emerald-400/30 text-emerald-900 hover:bg-emerald-500/20 hover:shadow-[0_0_25px_rgba(52,211,153,0.22)] dark:text-emerald-100"
@@ -959,7 +959,7 @@ export default function ReportPrice() {
             <button
               onClick={resetAll}
               className={cn(
-                "px-5 py-2.5 rounded-2xl border font-semibold text-sm transition flex items-center gap-2",
+                "w-full justify-center px-5 py-2.5 rounded-2xl border font-semibold text-sm transition flex items-center gap-2 sm:w-auto",
                 "bg-black/5 border-slate-200/70 text-slate-800 hover:bg-rose-500/10 hover:border-rose-400/30 hover:shadow-[0_0_25px_rgba(244,63,94,0.20)]",
                 "dark:bg-[#080E1E]/89 dark:border-white/10 dark:text-white/75"
               )}
@@ -969,11 +969,11 @@ export default function ReportPrice() {
               {t("reset")}
             </button>
 
-            <div className={cn("text-xs", UI.muted)}>* {t("rpSelectBeforeDownload")}</div>
+            <div className={cn("w-full text-xs sm:w-auto", UI.muted)}>* {t("rpSelectBeforeDownload")}</div>
           </div>
 
           {/* Summary boxes */}
-          <div className="mt-5 grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <StatBox label={t("asset")} value={asset} tone="blue" />
             <StatBox label={t("detected")} value={totalCoinsDetected} tone="emerald" />
             <StatBox label={t("selectedCount")} value={`${selectedCount}/${availableCoins.length}`} tone="emerald" />
@@ -1010,7 +1010,7 @@ export default function ReportPrice() {
 
         {/* Coin Picker */}
         <div className={cn("mt-4", UI.panel)}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="text-lg font-semibold">
                 {t("coinSelectTitle")} ({selectedCount}/{availableCoins.length})
@@ -1018,7 +1018,7 @@ export default function ReportPrice() {
               <div className={cn("text-sm mt-1", UI.muted)}>{t("rpCoinSearchHint")}</div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
               <div
                 className={cn(
                   "rounded-2xl p-1 flex items-center",
@@ -1052,9 +1052,9 @@ export default function ReportPrice() {
                 </button>
               </div>
 
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <div className={cn(
-                  "flex items-center gap-2 rounded-2xl border px-3 py-2 w-[280px]",
+                  "flex items-center gap-2 rounded-2xl border px-3 py-2 w-full sm:w-[280px]",
                   "border-slate-200/70 bg-white/70",
                   "dark:border-white/10 dark:bg-[#080E1E]/89"
                 )}>

@@ -368,12 +368,12 @@ export default function AuthBar() {
       {user ? (
         <div
           className={cn(
-            "rounded-2xl p-1 flex items-center gap-1 border",
+            "w-full rounded-2xl p-1 flex items-center justify-between gap-1 border sm:w-auto sm:justify-start",
             "bg-black/5 border-black/10 text-black/75",
             "dark:bg-white/8 dark:border-white/12 dark:text-white/80",
           )}
         >
-          <div className="px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 max-w-[190px]">
+          <div className="px-2.5 py-1.5 rounded-xl text-sm flex items-center gap-2 max-w-[120px] sm:px-3 sm:max-w-[190px]">
             <UserRound className="h-4 w-4 shrink-0 opacity-80" />
             <span className="truncate">{checkingSession ? "..." : userLabel}</span>
           </div>
@@ -381,18 +381,18 @@ export default function AuthBar() {
             type="button"
             onClick={onLogout}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 transition",
+              "px-2.5 py-1.5 rounded-xl text-sm flex items-center gap-2 transition sm:px-3",
               "hover:bg-black/8 dark:hover:bg-white/12",
             )}
           >
             <LogOut className="h-4 w-4" />
-            Logout
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       ) : (
         <div
           className={cn(
-            "rounded-2xl p-1 flex items-center gap-1 border",
+            "w-full rounded-2xl p-1 flex items-center justify-between gap-1 border sm:w-auto sm:justify-start",
             "bg-black/5 border-black/10",
             "dark:bg-white/8 dark:border-white/12",
           )}
@@ -401,25 +401,25 @@ export default function AuthBar() {
             type="button"
             onClick={openLogin}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 transition",
+              "px-2.5 py-1.5 rounded-xl text-sm flex items-center gap-2 transition sm:px-3",
               "text-black/75 hover:bg-black/8",
               "dark:text-white/80 dark:hover:bg-white/12",
             )}
           >
             <LogIn className="h-4 w-4" />
-            Log In
+            <span className="hidden sm:inline">Log In</span>
           </button>
           <button
             type="button"
             onClick={openSignup}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 transition",
+              "px-2.5 py-1.5 rounded-xl text-sm flex items-center gap-2 transition sm:px-3",
               "bg-black/10 text-black/85 hover:bg-black/15",
               "dark:bg-white/15 dark:text-white/90 dark:hover:bg-white/20",
             )}
           >
             <UserPlus className="h-4 w-4" />
-            Sign Up
+            <span className="hidden sm:inline">Sign Up</span>
           </button>
         </div>
       )}
