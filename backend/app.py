@@ -18,6 +18,19 @@ from report_price.router import router as report_price_router
 app = FastAPI()
 logger = logging.getLogger(__name__)
 PROFILE_ENABLED = os.getenv("EGLC_PROFILE", "0") == "1"
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+EXTRA_CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOW_ORIGINS", "").split(",")
+    if origin.strip()
+]
+ALLOW_ORIGIN_REGEX = (
+    r"^http://(localhost|127\.0\.0\.1):\d+$"
+    r"|^https://[a-z0-9-]+\.vercel\.app$"
+)
 
 
 def _log_profile(name: str, started_at: float) -> None:
@@ -29,11 +42,8 @@ def _log_profile(name: str, started_at: float) -> None:
 # --- CORS (สำหรับ dev + Vite proxy ก็ได้ / ไม่ใช้ก็ได้) ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):\d+$",
+    allow_origins=[*DEFAULT_CORS_ORIGINS, *EXTRA_CORS_ORIGINS],
+    allow_origin_regex=ALLOW_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

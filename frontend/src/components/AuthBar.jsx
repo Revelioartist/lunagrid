@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LogIn, LogOut, UserPlus, UserRound, X } from "lucide-react";
+import { apiUrl } from "../lib/api";
 
 const TOKEN_KEY = "eglc_auth_token";
 const AUTH_EVENT = "eglc-auth-change";
@@ -30,7 +31,7 @@ function writeStoredToken(token) {
 }
 
 async function requestMe(token) {
-  const res = await fetch("/api/auth/me", {
+  const res = await fetch(apiUrl("/api/auth/me"), {
     headers: { Authorization: `Bearer ${token}` },
   });
   const payload = await res.json().catch(() => ({}));
@@ -213,7 +214,7 @@ export default function AuthBar() {
       try {
         const body = { username: username.trim(), password };
 
-        const res = await fetch(isSignup ? "/api/auth/signup" : "/api/auth/login", {
+        const res = await fetch(apiUrl(isSignup ? "/api/auth/signup" : "/api/auth/login"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
