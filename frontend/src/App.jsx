@@ -1120,7 +1120,7 @@ export default function App() {
 
             <span
               className={cn(
-                "px-3 py-1 rounded-xl border text-sm font-medium w-full max-w-full truncate sm:max-w-[520px]",
+                "px-3 py-1 rounded-xl border text-sm font-medium max-w-[520px] truncate",
                 file
                   ? isDark
                     ? "border-white/15 bg-white/10 text-white/90"
