@@ -574,13 +574,13 @@ function ReviewsMarquee({ isDark }) {
             key={idx}
             className={cn(
               "rounded-2xl border transition flex flex-col justify-between",
-              "w-[380px] h-[145px] p-4",
+              "w-[85vw] max-w-[380px] min-h-[145px] p-4 sm:w-[380px]",
               isDark
                 ? "bg-white/5 border-white/10 hover:bg-white/10"
                 : "bg-white/60 border-black/10 hover:bg-white/80",
             )}
           >
-            <div className="flex items-center justify-between gap-10">
+            <div className="flex items-center justify-between gap-4 sm:gap-10">
               <div
                 className={cn(
                   "font-semibold text-base",
@@ -834,10 +834,10 @@ export default function App() {
 
   return (
     <div className={cn("min-h-screen", pageBg)}>
-      <div className="i18n-swap-layer max-w-5xl mx-auto px-6 py-10">
+      <div className="i18n-swap-layer max-w-5xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3 sm:items-center">
             <div
               className={cn(
                 "h-10 w-10 rounded-2xl flex items-center justify-center",
@@ -868,7 +868,7 @@ export default function App() {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 md:w-auto md:justify-end">
             {/* Lang */}
             <div
               className={cn(
@@ -957,8 +957,8 @@ export default function App() {
         </div>
 
         {/* Main Card */}
-        <div className={cn("mt-8 rounded-3xl p-8", shellCard)}>
-          <div className="text-2xl font-semibold">{t("headline")}</div>
+        <div className={cn("mt-6 rounded-3xl p-4 sm:mt-8 sm:p-6 md:p-8", shellCard)}>
+          <div className="text-xl font-semibold sm:text-2xl">{t("headline")}</div>
           <div
             className={cn(
               "mt-2 leading-relaxed",
@@ -972,7 +972,7 @@ export default function App() {
           <div
             {...getRootProps()}
             className={cn(
-              "mt-6 rounded-2xl border border-dashed p-6 cursor-pointer transition relative",
+              "mt-6 rounded-2xl border border-dashed p-4 sm:p-6 cursor-pointer transition relative",
               isDark
                 ? "bg-white/5 border-white/15"
                 : "bg-black/5 border-black/15",
@@ -985,7 +985,7 @@ export default function App() {
           >
             <input {...getInputProps()} />
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <div
                 className={cn(
                   "h-12 w-12 rounded-2xl flex items-center justify-center border",
@@ -1033,7 +1033,7 @@ export default function App() {
               {/* Status chip */}
               <div
                 className={cn(
-                  "shrink-0 rounded-xl px-3 py-2 text-xs border flex items-center gap-2",
+                  "shrink-0 self-start rounded-xl px-3 py-2 text-xs border flex items-center gap-2 sm:self-auto",
                   isDragActive
                     ? "border-green-400/60 bg-green-500/10"
                     : file
@@ -1096,7 +1096,7 @@ export default function App() {
             {notice ? (
               <div
                 className={cn(
-                  "absolute -bottom-3 left-6 rounded-xl px-3 py-1 text-xs border backdrop-blur-md",
+                  "absolute -bottom-3 left-4 rounded-xl px-3 py-1 text-xs border backdrop-blur-md sm:left-6",
                   isDark
                     ? "bg-white/10 border-white/15 text-white/80"
                     : "bg-white/80 border-black/10 text-black/70",
@@ -1110,7 +1110,7 @@ export default function App() {
           {/* Selected file (with frame) */}
           <div
             className={cn(
-              "mt-4 text-sm flex items-center gap-2",
+              "mt-4 text-sm flex flex-col items-start gap-2 sm:flex-row sm:items-center",
               isDark ? "text-white/70" : "text-black/65",
             )}
           >
@@ -1120,8 +1120,7 @@ export default function App() {
 
             <span
               className={cn(
-                "px-3 py-1 rounded-xl border text-sm font-medium",
-                "max-w-[520px] truncate",
+                "px-3 py-1 rounded-xl border text-sm font-medium w-full max-w-full truncate sm:max-w-[520px]",
                 file
                   ? isDark
                     ? "border-white/15 bg-white/10 text-white/90"
@@ -1248,12 +1247,12 @@ export default function App() {
           ) : null}
 
           {/* Buttons */}
-          <div className="mt-6 flex items-center gap-3">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <button
               onClick={onClean}
               disabled={!file || loading || blockDownload}
               className={cn(
-                "px-5 py-3 rounded-2xl font-semibold transition border duration-200",
+                "w-full sm:w-auto px-5 py-3 rounded-2xl font-semibold transition border duration-200 flex items-center justify-center",
                 isDark ? "border-white/10" : "border-black/10",
                 isDark ? "bg-white/10" : "bg-white/70",
                 (!file || loading) && "opacity-50 cursor-not-allowed",
@@ -1289,7 +1288,7 @@ export default function App() {
             <button
               onClick={onReset}
               className={cn(
-                "px-5 py-3 rounded-2xl font-semibold transition border duration-200",
+                "w-full sm:w-auto px-5 py-3 rounded-2xl font-semibold transition border duration-200",
                 isDark
                   ? "bg-white/5 border-white/10"
                   : "bg-black/5 border-black/10",
