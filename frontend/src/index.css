@@ -1,0 +1,482 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== Theme Interpolation ===== */
+@property --tech-bg-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f8ecdb;
+}
+@property --tech-bg-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #cfc2ff;
+}
+@property --tech-bg-c {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #b6c6ff;
+}
+@property --tech-peach-glow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 198, 132, 0.52);
+}
+@property --tech-violet-glow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(130, 91, 255, 0.42);
+}
+@property --tech-blue-glow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(92, 122, 255, 0.34);
+}
+@property --tech-right-shade {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(19, 17, 47, 0.22);
+}
+@property --tech-orbit {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(111, 84, 226, 0.31);
+}
+@property --tech-orbit-soft {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(111, 84, 226, 0.16);
+}
+@property --tech-stars {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(95, 68, 211, 0.22);
+}
+@property --tech-noise {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.26);
+}
+@property --tech-scroll-rotate {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --tech-scroll-zoom {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --tech-scroll-intensity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --tech-orbit-spin {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --tech-orbit-pulse {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* ===== Tech Background ===== */
+:root {
+  --theme-switch-duration: 620ms;
+  --theme-switch-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tech-bg-a: #f8ecdb;
+  --tech-bg-b: #cfc2ff;
+  --tech-bg-c: #b6c6ff;
+  --tech-peach-glow: rgba(255, 198, 132, 0.52);
+  --tech-violet-glow: rgba(130, 91, 255, 0.42);
+  --tech-blue-glow: rgba(92, 122, 255, 0.34);
+  --tech-right-shade: rgba(19, 17, 47, 0.22);
+  --tech-orbit: rgba(111, 84, 226, 0.31);
+  --tech-orbit-soft: rgba(111, 84, 226, 0.16);
+  --tech-stars: rgba(95, 68, 211, 0.22);
+  --tech-noise: rgba(255, 255, 255, 0.26);
+  --tech-scroll-rotate: 0deg;
+  --tech-scroll-zoom: 1;
+  --tech-scroll-intensity: 0;
+  --tech-orbit-spin: 0deg;
+  --tech-orbit-pulse: 0;
+}
+
+.dark {
+  --tech-bg-a: #050817;
+  --tech-bg-b: #2a1a66;
+  --tech-bg-c: #071935;
+  --tech-peach-glow: rgba(255, 191, 122, 0.4);
+  --tech-violet-glow: rgba(147, 98, 255, 0.58);
+  --tech-blue-glow: rgba(56, 95, 255, 0.4);
+  --tech-right-shade: rgba(0, 0, 0, 0.68);
+  --tech-orbit: rgba(206, 184, 255, 0.44);
+  --tech-orbit-soft: rgba(182, 157, 255, 0.2);
+  --tech-stars: rgba(207, 188, 255, 0.34);
+  --tech-noise: rgba(255, 255, 255, 0.14);
+}
+
+.app-tech-bg {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  transition:
+    --tech-bg-a var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-bg-b var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-bg-c var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-peach-glow var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-violet-glow var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-blue-glow var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-right-shade var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-orbit var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-orbit-soft var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-stars var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-noise var(--theme-switch-duration) var(--theme-switch-ease);
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, var(--tech-right-shade) 62%, var(--tech-right-shade) 100%),
+    radial-gradient(72rem 50rem at -8% -10%, var(--tech-peach-glow), transparent 63%),
+    radial-gradient(78rem 56rem at 41% 7%, var(--tech-violet-glow), transparent 60%),
+    radial-gradient(74rem 58rem at 90% 74%, var(--tech-blue-glow), transparent 68%),
+    linear-gradient(122deg, var(--tech-bg-a) 0%, var(--tech-bg-b) 48%, var(--tech-bg-c) 72%, var(--tech-bg-a) 100%);
+}
+
+.app-tech-backdrop,
+.app-tech-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app-tech-backdrop::before,
+.app-tech-backdrop::after,
+.app-tech-mesh::before,
+.app-tech-mesh::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transition:
+    --tech-orbit var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-orbit-soft var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-stars var(--theme-switch-duration) var(--theme-switch-ease),
+    --tech-noise var(--theme-switch-duration) var(--theme-switch-ease),
+    opacity var(--theme-switch-duration) var(--theme-switch-ease);
+}
+
+@keyframes tech-orbit-spin {
+  from {
+    --tech-orbit-spin: 0deg;
+  }
+  to {
+    --tech-orbit-spin: 360deg;
+  }
+}
+
+@keyframes tech-orbit-breathe {
+  0%,
+  100% {
+    --tech-orbit-pulse: 0;
+  }
+  50% {
+    --tech-orbit-pulse: 1;
+  }
+}
+
+@keyframes tech-orbit-stars-spin {
+  from {
+    transform: translateZ(0) rotate(0deg);
+  }
+  to {
+    transform: translateZ(0) rotate(-360deg);
+  }
+}
+
+.app-tech-backdrop::before {
+  background:
+    radial-gradient(
+      circle at 72% 43%,
+      transparent 0 84px,
+      var(--tech-orbit) 84px 86px,
+      transparent 86px 140px,
+      var(--tech-orbit) 140px 142px,
+      transparent 142px 198px,
+      var(--tech-orbit-soft) 198px 200px,
+      transparent 200px 260px,
+      var(--tech-orbit-soft) 260px 261px,
+      transparent 261px
+    ),
+    radial-gradient(circle at 72% 43%, rgba(255, 255, 255, 0.15) 0 2px, transparent 3px);
+  transform-origin: 72% 43%;
+  transform:
+    translateZ(0)
+    rotate(calc(var(--tech-orbit-spin) + var(--tech-scroll-rotate)))
+    scale(calc(var(--tech-scroll-zoom) + (var(--tech-orbit-pulse) * 0.03)));
+  opacity: calc(0.74 + (var(--tech-scroll-intensity) * 0.16));
+  animation:
+    tech-orbit-spin 30s linear infinite,
+    tech-orbit-breathe 8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.app-tech-backdrop::after {
+  background:
+    radial-gradient(44rem 24rem at 18% 101%, var(--tech-noise), transparent 72%),
+    radial-gradient(30rem 20rem at 36% 10%, rgba(255, 255, 255, 0.16), transparent 76%);
+  opacity: 0.5;
+}
+
+.app-tech-mesh::before {
+  background:
+    repeating-conic-gradient(
+      from 12deg at 72% 43%,
+      rgba(255, 255, 255, 0.95) 0deg 0.6deg,
+      transparent 0.6deg 24deg
+    ),
+    repeating-conic-gradient(
+      from 4deg at 72% 43%,
+      rgba(230, 221, 255, 0.85) 0deg 0.42deg,
+      transparent 0.42deg 17deg
+    ),
+    repeating-conic-gradient(
+      from 26deg at 72% 43%,
+      rgba(160, 188, 255, 0.66) 0deg 0.34deg,
+      transparent 0.34deg 28deg
+    );
+  mask-image: radial-gradient(
+    circle at 72% 43%,
+    transparent 0 82px,
+    black 84px 87px,
+    transparent 87px 138px,
+    black 140px 143px,
+    transparent 143px 196px,
+    black 198px 201px,
+    transparent 201px 259px,
+    black 260px 262px,
+    transparent 262px
+  );
+  transform-origin: 72% 43%;
+  opacity: calc(0.4 + (var(--tech-scroll-intensity) * 0.2));
+  animation: tech-orbit-stars-spin 34s linear infinite;
+  will-change: transform, opacity;
+}
+
+.app-tech-mesh::after {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 42%),
+    radial-gradient(20rem 20rem at 16% 16%, rgba(255, 255, 255, 0.2), transparent 76%);
+  mask-image: linear-gradient(to right, black 0%, black 58%, transparent 100%);
+  opacity: 0.42;
+}
+
+/* ===== Route Top Loading Bar ===== */
+@keyframes route-loading-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.route-loading-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 70;
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.12) 0%,
+    rgba(14, 165, 233, 0.04) 45%,
+    rgba(14, 165, 233, 0) 100%
+  );
+}
+
+.route-loading-bar {
+  height: 100%;
+  width: 34%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.95) 0%,
+    rgba(14, 165, 233, 0.95) 45%,
+    rgba(59, 130, 246, 0.92) 100%
+  );
+  box-shadow: 0 0 14px rgba(14, 165, 233, 0.55);
+  animation: route-loading-sweep 0.95s linear infinite;
+}
+
+.dark .route-loading-wrap {
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.2) 0%,
+    rgba(56, 189, 248, 0.07) 45%,
+    rgba(56, 189, 248, 0) 100%
+  );
+}
+
+.dark .route-loading-bar {
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.7);
+}
+
+/* ===== Page Route Transition ===== */
+@keyframes page-route-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+    filter: blur(2.4px);
+  }
+}
+
+@keyframes page-route-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.992);
+    filter: blur(3px);
+  }
+  64% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.page-route-stage {
+  transform-origin: top center;
+  will-change: opacity, transform, filter;
+  backface-visibility: hidden;
+}
+
+.page-route-stage.is-exit {
+  pointer-events: none;
+  animation: page-route-exit 190ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.page-route-stage.is-enter {
+  animation: page-route-enter 430ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.page-route-stage.is-idle {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+@keyframes i18n-content-swap {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  34% {
+    opacity: 0.45;
+    transform: translateY(2px) scale(0.998);
+    filter: blur(2.4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.lang-switching .i18n-swap-layer {
+  animation: i18n-content-swap 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-switch-duration: 0ms;
+  }
+
+  .lang-switching .i18n-swap-layer {
+    animation: none;
+  }
+
+  .app-tech-backdrop::before {
+    animation: none;
+    transform: none;
+    opacity: 0.8;
+  }
+
+  .app-tech-mesh::before {
+    animation: none;
+    transform: none;
+    opacity: 0.42;
+  }
+
+  .route-loading-bar {
+    animation-duration: 2.2s;
+  }
+
+  .page-route-stage {
+    animation: none !important;
+    transition: opacity 110ms linear;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .page-route-stage.is-exit {
+    opacity: 0;
+  }
+
+  .page-route-stage.is-enter,
+  .page-route-stage.is-idle {
+    opacity: 1;
+  }
+}
+
+/* ===== Minimal Scrollbar (Theme) ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-corner { background: transparent; }
+
+.light * { scrollbar-color: rgba(0, 0, 0, 0.24) transparent; }
+.light *::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.16); background-clip: content-box; }
+.light *::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.26); background-clip: content-box; }
+
+/* ===== Reviews marquee ===== */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 28s linear infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+/* Pause on hover */
+.marquee-wrap:hover .marquee-track {
+  animation-play-state: paused;
+}
