@@ -103,6 +103,7 @@
   --tech-scroll-intensity: 0;
   --tech-orbit-spin: 0deg;
   --tech-orbit-pulse: 0;
+  --text-selection-bg: rgb(0 200 255 / 0.28);
 }
 
 .dark {
@@ -117,6 +118,18 @@
   --tech-orbit-soft: rgba(182, 157, 255, 0.2);
   --tech-stars: rgba(207, 188, 255, 0.34);
   --tech-noise: rgba(255, 255, 255, 0.14);
+}
+
+::selection {
+  background: var(--text-selection-bg);
+  color: currentColor;
+  text-shadow: 0 0 10px rgb(0 200 255 / 0.72);
+}
+
+::-moz-selection {
+  background: var(--text-selection-bg);
+  color: currentColor;
+  text-shadow: 0 0 10px rgb(0 200 255 / 0.72);
 }
 
 .app-tech-bg {

@@ -277,38 +277,55 @@ export default function OverlayNav({ active, onGoEth, onGoReport }) {
         <MenuGlyph open={mobileOpen} />
       </button>
 
-      {mobileOpen && (
-        <div className={cn(forceSideDrawer ? "block" : "md:hidden", "fixed inset-0 z-40")}>
-          <div
-            className="absolute inset-0 bg-black/25 backdrop-blur-[1px]"
-            onClick={closeDrawer}
-            role="button"
-            tabIndex={0}
+      <div
+        className={cn(
+          forceSideDrawer ? "block" : "md:hidden",
+          "fixed inset-0 z-40 transition-opacity duration-340 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        )}
+        aria-hidden={!mobileOpen}
+      >
+        <div
+          className={cn(
+            "absolute inset-0 bg-black/25",
+            "transition-[opacity,backdrop-filter] duration-340 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "will-change-[opacity,backdrop-filter]",
+            mobileOpen ? "opacity-100 backdrop-blur-[2px]" : "opacity-0 backdrop-blur-0",
+          )}
+          onClick={closeDrawer}
+          role="button"
+          tabIndex={0}
+        />
+        <div
+          className={cn(
+            "absolute left-0 top-0 h-full w-20 px-4 pt-20 pb-4 flex flex-col gap-3",
+            "bg-white/70 dark:bg-slate-950/45 border-r border-black/10 dark:border-white/15 backdrop-blur-xl",
+            "transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            mobileOpen ? "translate-x-0" : "-translate-x-full",
+          )}
+        >
+          <NavItem
+            id="eth"
+            label="ETH Data"
+            icon={
+              <Database className="h-5 w-5 text-slate-900/90 dark:text-white/80" />
+            }
+            activeId={active}
+            onClick={onGoEth}
+            onAfterClick={closeDrawer}
           />
-          <div className="absolute left-0 top-0 h-full w-20 px-4 pt-20 pb-4 flex flex-col gap-3 bg-white/70 dark:bg-slate-950/45 border-r border-black/10 dark:border-white/15 backdrop-blur-xl">
-            <NavItem
-              id="eth"
-              label="ETH Data"
-              icon={
-                <Database className="h-5 w-5 text-slate-900/90 dark:text-white/80" />
-              }
-              activeId={active}
-              onClick={onGoEth}
-              onAfterClick={closeDrawer}
-            />
-            <NavItem
-              id="report"
-              label="Report Price"
-              icon={
-                <ArrowLeftRight className="h-5 w-5 text-slate-900/90 dark:text-white/80" />
-              }
-              activeId={active}
-              onClick={onGoReport}
-              onAfterClick={closeDrawer}
-            />
-          </div>
+          <NavItem
+            id="report"
+            label="Report Price"
+            icon={
+              <ArrowLeftRight className="h-5 w-5 text-slate-900/90 dark:text-white/80" />
+            }
+            activeId={active}
+            onClick={onGoReport}
+            onAfterClick={closeDrawer}
+          />
         </div>
-      )}
+      </div>
     </>
   );
 }
