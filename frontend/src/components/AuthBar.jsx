@@ -26,10 +26,22 @@ async function requestMe() {
   return payload?.user || null;
 }
 
+async function requestAuthConfig() {
+  const res = await apiFetch("/api/auth/config");
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload?.detail || `HTTP ${res.status}`);
+  }
+  return {
+    publicSignupEnabled: Boolean(payload?.public_signup_enabled),
+  };
+}
+
 export default function AuthBar() {
   const [user, setUser] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [sessionRevision, setSessionRevision] = useState(0);
+  const [publicSignupEnabled, setPublicSignupEnabled] = useState(false);
 
   const [mode, setMode] = useState(null); // "login" | "signup" | null
   const [modalVisible, setModalVisible] = useState(false);
@@ -74,11 +86,28 @@ export default function AuthBar() {
   }, [clearCloseTimer, resetForm]);
 
   const openSignup = useCallback(() => {
+    if (!publicSignupEnabled) return;
     clearCloseTimer();
     resetForm();
     setMode("signup");
     setModalVisible(false);
-  }, [clearCloseTimer, resetForm]);
+  }, [clearCloseTimer, publicSignupEnabled, resetForm]);
+
+  useEffect(() => {
+    let alive = true;
+    requestAuthConfig()
+      .then((config) => {
+        if (!alive) return;
+        setPublicSignupEnabled(Boolean(config?.publicSignupEnabled));
+      })
+      .catch(() => {
+        if (!alive) return;
+        setPublicSignupEnabled(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onAuthSync = () => {
@@ -93,13 +122,17 @@ export default function AuthBar() {
   }, []);
 
   useEffect(() => {
+    if (mode === "signup" && !publicSignupEnabled) {
+      setMode("login");
+      return;
+    }
     if (!mode) {
       setModalVisible(false);
       return;
     }
     const raf = window.requestAnimationFrame(() => setModalVisible(true));
     return () => window.cancelAnimationFrame(raf);
-  }, [mode]);
+  }, [mode, publicSignupEnabled]);
 
   useEffect(() => () => clearCloseTimer(), [clearCloseTimer]);
 
@@ -266,7 +299,11 @@ export default function AuthBar() {
               {isSignup ? "Create Account" : "Welcome Back"}
             </div>
             <div className="text-sm opacity-70">
-              {isSignup ? "Sign up to start using the app." : "Log in to your account."}
+              {isSignup
+                ? "Sign up to start using the app."
+                : publicSignupEnabled
+                  ? "Log in to your account."
+                  : "Log in to your account. Access is managed by the administrator."}
             </div>
           </div>
           <button
@@ -367,7 +404,7 @@ export default function AuthBar() {
       ) : (
         <div
           className={cn(
-            "w-full rounded-2xl p-1 flex items-center justify-between gap-1 border sm:w-auto sm:justify-start",
+            "w-full rounded-2xl p-1 flex items-center gap-1 border sm:w-auto sm:justify-start",
             "bg-black/5 border-black/10",
             "dark:bg-white/8 dark:border-white/12",
           )}
@@ -384,18 +421,20 @@ export default function AuthBar() {
             <LogIn className="h-4 w-4" />
             <span className="hidden sm:inline">Log In</span>
           </button>
-          <button
-            type="button"
-            onClick={openSignup}
-            className={cn(
-              "px-2.5 py-1.5 rounded-xl text-sm flex items-center gap-2 transition sm:px-3",
-              "bg-black/10 text-black/85 hover:bg-black/15",
-              "dark:bg-white/15 dark:text-white/90 dark:hover:bg-white/20",
-            )}
-          >
-            <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">Sign Up</span>
-          </button>
+          {publicSignupEnabled ? (
+            <button
+              type="button"
+              onClick={openSignup}
+              className={cn(
+                "px-2.5 py-1.5 rounded-xl text-sm flex items-center gap-2 transition sm:px-3",
+                "bg-black/10 text-black/85 hover:bg-black/15",
+                "dark:bg-white/15 dark:text-white/90 dark:hover:bg-white/20",
+              )}
+            >
+              <UserPlus className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign Up</span>
+            </button>
+          ) : null}
         </div>
       )}
 

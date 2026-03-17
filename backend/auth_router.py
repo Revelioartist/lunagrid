@@ -37,6 +37,12 @@ SIGNUP_RATE_LIMIT_ATTEMPTS = max(
   2,
   int(os.getenv("EGLC_SIGNUP_RATE_LIMIT_ATTEMPTS", "5")),
 )
+PUBLIC_SIGNUP_ENABLED = os.getenv("EGLC_PUBLIC_SIGNUP_ENABLED", "0").strip().lower() in {
+  "1",
+  "true",
+  "yes",
+  "on",
+}
 _RATE_LIMIT_LOCK = threading.Lock()
 _RATE_LIMIT_BUCKETS: dict[str, list[float]] = {}
 
@@ -84,6 +90,19 @@ def _build_logout_response() -> JSONResponse:
   return response
 
 
+def _public_auth_config_payload() -> dict[str, bool]:
+  return {"public_signup_enabled": PUBLIC_SIGNUP_ENABLED}
+
+
+def _ensure_public_signup_enabled() -> None:
+  if PUBLIC_SIGNUP_ENABLED:
+    return
+  raise HTTPException(
+    status_code=403,
+    detail="Public sign-up is disabled. Please contact the administrator.",
+  )
+
+
 class SignUpBody(BaseModel):
   username: str = Field(min_length=3, max_length=32)
   password: str = Field(min_length=10, max_length=128)
@@ -94,8 +113,14 @@ class LoginBody(BaseModel):
   password: str = Field(min_length=1, max_length=128)
 
 
+@router.get("/config")
+def auth_config():
+  return _public_auth_config_payload()
+
+
 @router.post("/signup")
 def signup(body: SignUpBody, request: Request):
+  _ensure_public_signup_enabled()
   _consume_rate_limit(
     "signup",
     client_ip_from_request(request),

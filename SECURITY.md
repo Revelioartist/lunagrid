@@ -10,6 +10,7 @@ This project now avoids committing auth/session secrets and local auth data by d
 4. Set `CORS_ALLOW_ORIGINS` to only the exact frontend URLs that should talk to the API.
 5. Set `EGLC_ALLOWED_HOSTS` in production.
 6. Set `EGLC_AUTH_COOKIE_SECURE=1` when serving over HTTPS.
+7. Keep `EGLC_PUBLIC_SIGNUP_ENABLED=0` unless you intentionally want public self-registration.
 
 ## If secrets or data were already pushed
 
@@ -27,3 +28,9 @@ Do all of these:
 - local database files such as `backend/auth.db`
 - `__pycache__`
 - frontend build output and `node_modules`
+
+## Public repo guidance
+
+- Keep the repository public only for source code, never for live data or secrets.
+- Use mock or anonymized sample files when you need examples in the repo.
+- Disable public self-signup unless the product is meant for open registration.

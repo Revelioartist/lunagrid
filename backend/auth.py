@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from contextlib import contextmanager
 import hashlib
 import hmac
 import json
@@ -11,6 +12,7 @@ import secrets
 import sqlite3
 import time
 from pathlib import Path
+from typing import Iterator
 
 from fastapi import Cookie, Header, HTTPException
 
@@ -90,8 +92,17 @@ def _conn() -> sqlite3.Connection:
   return con
 
 
+@contextmanager
+def _db() -> Iterator[sqlite3.Connection]:
+  con = _conn()
+  try:
+    yield con
+  finally:
+    con.close()
+
+
 def init_auth_db() -> None:
-  with _conn() as con:
+  with _db() as con:
     con.execute(
       """
       CREATE TABLE IF NOT EXISTS users (
@@ -179,7 +190,7 @@ def _user_to_public(row: sqlite3.Row) -> dict:
 
 def get_user_by_email(email: str) -> dict | None:
   normalized = normalize_username(email)
-  with _conn() as con:
+  with _db() as con:
     row = con.execute(
       "SELECT id, name, email, created_at FROM users WHERE email = ? OR lower(name) = ?",
       (normalized, normalized),
@@ -188,7 +199,7 @@ def get_user_by_email(email: str) -> dict | None:
 
 
 def get_user_by_id(user_id: int) -> dict | None:
-  with _conn() as con:
+  with _db() as con:
     row = con.execute(
       "SELECT id, name, email, created_at FROM users WHERE id = ?",
       (int(user_id),),
@@ -207,7 +218,7 @@ def create_user(username: str, password: str) -> dict:
   validate_password(pw)
 
   password_hash = hash_password(pw)
-  with _conn() as con:
+  with _db() as con:
     try:
       cur = con.execute(
         "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
@@ -228,7 +239,7 @@ def create_user(username: str, password: str) -> dict:
 
 def authenticate_user(username: str, password: str) -> dict | None:
   normalized_username = normalize_username(username)
-  with _conn() as con:
+  with _db() as con:
     row = con.execute(
       """
       SELECT id, name, email, password_hash, created_at
