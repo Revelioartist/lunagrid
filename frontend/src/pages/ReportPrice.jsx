@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { setAppLanguage } from "../i18n";
-import { apiUrl } from "../lib/api";
+import { apiFetch, normalizeApiErrorMessage, readApiError } from "../lib/api";
 import {
   Search,
   FileSpreadsheet,
@@ -583,14 +583,14 @@ export default function ReportPrice() {
       fd.append("limit_rows", "12");
       fd.append("limit_cols", "12");
 
-      const res = await fetch(apiUrl("/api/report/preview"), {
+      const res = await apiFetch("/api/report/preview", {
         method: "POST",
         body: fd,
         signal: controller.signal,
       });
 
+      if (!res.ok) throw new Error(await readApiError(res));
       const payload = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(payload?.detail || `HTTP ${res.status}`);
 
       if (previewReqRef.current !== requestId) return;
       setMeta(payload.meta || null);
@@ -607,7 +607,7 @@ export default function ReportPrice() {
     } catch (e) {
       if (e.name === "AbortError" || controller.signal.aborted) return;
       if (previewReqRef.current !== requestId) return;
-      setErrorMsg(String(e.message || e));
+      setErrorMsg(normalizeApiErrorMessage(String(e.message || e)));
     } finally {
       if (previewReqRef.current === requestId) {
         setLoadingPreview(false);
@@ -689,13 +689,12 @@ export default function ReportPrice() {
       fd.append("include_bot", String(includeBot));
       fd.append("coins", orderedSelectedCoins.join(","));
 
-      const res = await fetch(apiUrl("/api/report/clean"), {
+      const res = await apiFetch("/api/report/clean", {
         method: "POST",
         body: fd,
       });
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.detail || `HTTP ${res.status}`);
+        throw new Error(await readApiError(res));
       }
 
       const blob = await res.blob();
@@ -712,7 +711,7 @@ export default function ReportPrice() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (e) {
-      setErrorMsg(String(e.message || e));
+      setErrorMsg(normalizeApiErrorMessage(String(e.message || e)));
     } finally {
       setLoadingDownload(false);
       if (IS_DEV) {

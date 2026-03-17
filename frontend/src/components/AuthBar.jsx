@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LogIn, LogOut, UserPlus, UserRound, X } from "lucide-react";
-import { apiUrl } from "../lib/api";
+import { apiFetch, readApiError } from "../lib/api";
 
-const TOKEN_KEY = "eglc_auth_token";
 const AUTH_EVENT = "eglc-auth-change";
 const AUTH_MODAL_TRANSITION_MS = 300;
 
@@ -11,29 +10,15 @@ function cn(...xs) {
   return xs.filter(Boolean).join(" ");
 }
 
-function readStoredToken() {
-  try {
-    return localStorage.getItem(TOKEN_KEY) || "";
-  } catch (e) {
-    void e;
-    return "";
-  }
-}
-
-function writeStoredToken(token) {
-  try {
-    if (token) localStorage.setItem(TOKEN_KEY, token);
-    else localStorage.removeItem(TOKEN_KEY);
-  } catch (e) {
-    void e;
-  }
+function notifyAuthChange() {
   window.dispatchEvent(new Event(AUTH_EVENT));
 }
 
-async function requestMe(token) {
-  const res = await fetch(apiUrl("/api/auth/me"), {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+async function requestMe() {
+  const res = await apiFetch("/api/auth/me");
+  if (res.status === 401) {
+    return null;
+  }
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(payload?.detail || `HTTP ${res.status}`);
@@ -42,9 +27,9 @@ async function requestMe(token) {
 }
 
 export default function AuthBar() {
-  const [token, setToken] = useState(() => readStoredToken());
   const [user, setUser] = useState(null);
-  const [checkingSession, setCheckingSession] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [sessionRevision, setSessionRevision] = useState(0);
 
   const [mode, setMode] = useState(null); // "login" | "signup" | null
   const [modalVisible, setModalVisible] = useState(false);
@@ -96,17 +81,13 @@ export default function AuthBar() {
   }, [clearCloseTimer, resetForm]);
 
   useEffect(() => {
-    const onStorage = (e) => {
-      if (e.key !== TOKEN_KEY) return;
-      setToken(e.newValue || "");
-    };
     const onAuthSync = () => {
-      setToken(readStoredToken());
+      setSessionRevision((value) => value + 1);
     };
-    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", onAuthSync);
     window.addEventListener(AUTH_EVENT, onAuthSync);
     return () => {
-      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onAuthSync);
       window.removeEventListener(AUTH_EVENT, onAuthSync);
     };
   }, []);
@@ -175,15 +156,8 @@ export default function AuthBar() {
 
   useEffect(() => {
     let alive = true;
-    if (!token) {
-      setUser(null);
-      return () => {
-        alive = false;
-      };
-    }
-
     setCheckingSession(true);
-    requestMe(token)
+    requestMe()
       .then((nextUser) => {
         if (!alive) return;
         setUser(nextUser);
@@ -191,8 +165,6 @@ export default function AuthBar() {
       .catch(() => {
         if (!alive) return;
         setUser(null);
-        setToken("");
-        writeStoredToken("");
       })
       .finally(() => {
         if (!alive) return;
@@ -202,7 +174,7 @@ export default function AuthBar() {
     return () => {
       alive = false;
     };
-  }, [token]);
+  }, [sessionRevision]);
 
   const onSubmit = useCallback(
     async (e) => {
@@ -214,25 +186,23 @@ export default function AuthBar() {
       try {
         const body = { username: username.trim(), password };
 
-        const res = await fetch(apiUrl(isSignup ? "/api/auth/signup" : "/api/auth/login"), {
+        const res = await apiFetch(isSignup ? "/api/auth/signup" : "/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        const payload = await res.json().catch(() => ({}));
         if (!res.ok) {
-          throw new Error(payload?.detail || `HTTP ${res.status}`);
+          throw new Error(await readApiError(res));
         }
+        const payload = await res.json().catch(() => ({}));
 
-        const nextToken = String(payload?.token || "");
         const nextUser = payload?.user || null;
-        if (!nextToken || !nextUser) {
+        if (!nextUser) {
           throw new Error("Invalid auth response from server.");
         }
 
-        writeStoredToken(nextToken);
-        setToken(nextToken);
         setUser(nextUser);
+        notifyAuthChange();
         closeModal();
       } catch (err) {
         setError(String(err?.message || err));
@@ -243,10 +213,15 @@ export default function AuthBar() {
     [closeModal, isSignup, mode, password, submitting, username],
   );
 
-  const onLogout = useCallback(() => {
-    writeStoredToken("");
-    setToken("");
+  const onLogout = useCallback(async () => {
+    try {
+      await apiFetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {
+      void e;
+    }
     setUser(null);
+    setCheckingSession(false);
+    notifyAuthChange();
   }, []);
 
   const userLabel = useMemo(() => {
@@ -327,7 +302,7 @@ export default function AuthBar() {
             <span className="text-xs opacity-75">Password</span>
             <input
               required
-              minLength={8}
+              minLength={10}
               type="password"
               autoComplete={isSignup ? "new-password" : "current-password"}
               value={password}
@@ -337,7 +312,7 @@ export default function AuthBar() {
                 "bg-white/70 border-indigo-900/15 focus:ring-2 focus:ring-indigo-500/35",
                 "dark:bg-[#0B1735]/75 dark:border-[#b3a3ff]/24 dark:focus:ring-indigo-300/30",
               )}
-              placeholder="At least 8 characters"
+              placeholder="At least 10 chars with letters and numbers"
             />
           </label>
 

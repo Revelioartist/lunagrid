@@ -4,11 +4,15 @@ import io
 import logging
 import os
 import time
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi.encoders import jsonable_encoder
 
-from .etl_report_price import build_transposed, df_to_xlsx_bytes, parse_report_xlsx, make_raw_preview
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, StreamingResponse
+
+from auth import get_current_user_or_401
+from security import read_validated_upload
+
+from .etl_report_price import build_transposed, df_to_xlsx_bytes, make_raw_preview, parse_report_xlsx
 
 router = APIRouter(prefix="/api/report", tags=["report-price"])
 logger = logging.getLogger(__name__)
@@ -24,16 +28,23 @@ def _log_profile(name: str, started_at: float) -> None:
 
 @router.post("/preview")
 async def report_preview(
+    request: Request,
     file: UploadFile = File(...),
     asset: str = Form("USD"),
     include_bot: bool = Form(True),
     coins: str = Form(""),
     limit_rows: int = Form(12),
     limit_cols: int = Form(12),
+    _: dict = Depends(get_current_user_or_401),
 ):
     started_at = time.perf_counter()
     try:
-        data = await file.read()
+        data = await read_validated_upload(
+            file,
+            request=request,
+            allowed_extensions=(".xlsx", ".xlsm"),
+            label="Excel file",
+        )
         parsed = parse_report_xlsx(data)
         df = parsed["df"]
 
@@ -62,22 +73,31 @@ async def report_preview(
             "cleanPreview": clean_prev,
         }
         return JSONResponse(content=jsonable_encoder(payload))
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Report preview error: {e}")
+        raise HTTPException(status_code=400, detail=f"Report preview error: {e}") from e
     finally:
         _log_profile("report_preview", started_at)
 
 
 @router.post("/clean")
 async def report_clean(
+    request: Request,
     file: UploadFile = File(...),
     asset: str = Form("USD"),
     include_bot: bool = Form(True),
     coins: str = Form(""),
+    _: dict = Depends(get_current_user_or_401),
 ):
     started_at = time.perf_counter()
     try:
-        data = await file.read()
+        data = await read_validated_upload(
+            file,
+            request=request,
+            allowed_extensions=(".xlsx", ".xlsm"),
+            label="Excel file",
+        )
         selected = [c.strip() for c in (coins or "").split(",") if c.strip()]
 
         out_df, _ = build_transposed(
@@ -96,7 +116,9 @@ async def report_clean(
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f'attachment; filename="{out_name}"'},
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Report clean error: {e}")
+        raise HTTPException(status_code=400, detail=f"Report clean error: {e}") from e
     finally:
         _log_profile("report_clean", started_at)

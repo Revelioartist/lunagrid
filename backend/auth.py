@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 import os
 import re
 import secrets
@@ -11,11 +12,75 @@ import sqlite3
 import time
 from pathlib import Path
 
-DB_PATH = Path(os.getenv("EGLC_AUTH_DB", str(Path(__file__).with_name("auth.db"))))
-AUTH_SECRET = os.getenv("EGLC_AUTH_SECRET", "eglc-dev-secret-change-me")
-TOKEN_TTL_SECONDS = int(os.getenv("EGLC_AUTH_TTL_SECONDS", "28800"))  # 8 hours
-PASSWORD_ITERATIONS = int(os.getenv("EGLC_AUTH_PBKDF2_ITERATIONS", "250000"))
+from fastapi import Cookie, Header, HTTPException
+
+logger = logging.getLogger(__name__)
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+  raw = os.getenv(name)
+  if raw is None:
+    return default
+  return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _default_data_dir() -> Path:
+  explicit_dir = os.getenv("EGLC_DATA_DIR", "").strip()
+  if explicit_dir:
+    return Path(explicit_dir).expanduser()
+
+  local_app_data = os.getenv("LOCALAPPDATA", "").strip()
+  if local_app_data:
+    return Path(local_app_data) / "LunaGrid"
+
+  return Path.home() / ".lunagrid"
+
+
+def _normalize_same_site(raw: str) -> str:
+  normalized = (raw or "lax").strip().lower()
+  if normalized not in {"lax", "strict", "none"}:
+    return "lax"
+  return normalized
+
+
+DB_PATH = Path(os.getenv("EGLC_AUTH_DB", str(_default_data_dir() / "auth.db"))).expanduser()
+AUTH_SECRET = os.getenv("EGLC_AUTH_SECRET", "").strip()
+if not AUTH_SECRET:
+  AUTH_SECRET = secrets.token_urlsafe(48)
+  logger.warning(
+    "EGLC_AUTH_SECRET is not set. Using an ephemeral secret; all sessions reset on restart.",
+  )
+
+TOKEN_TTL_SECONDS = max(300, int(os.getenv("EGLC_AUTH_TTL_SECONDS", "28800")))
+PASSWORD_ITERATIONS = max(
+  250000,
+  int(os.getenv("EGLC_AUTH_PBKDF2_ITERATIONS", "310000")),
+)
+AUTH_COOKIE_NAME = os.getenv("EGLC_AUTH_COOKIE_NAME", "eglc_session").strip() or "eglc_session"
+AUTH_COOKIE_SECURE = _env_flag("EGLC_AUTH_COOKIE_SECURE", False)
+AUTH_COOKIE_SAMESITE = _normalize_same_site(os.getenv("EGLC_AUTH_COOKIE_SAMESITE", "lax"))
+AUTH_COOKIE_DOMAIN = os.getenv("EGLC_AUTH_COOKIE_DOMAIN", "").strip() or None
 USERNAME_RE = re.compile(r"^[A-Za-z0-9._-]{3,32}$")
+
+if AUTH_COOKIE_SAMESITE == "none" and not AUTH_COOKIE_SECURE:
+  logger.warning(
+    "EGLC_AUTH_COOKIE_SAMESITE is 'none' but EGLC_AUTH_COOKIE_SECURE is disabled. Modern browsers may reject the cookie.",
+  )
+
+
+def auth_cookie_settings() -> dict[str, object]:
+  settings: dict[str, object] = {
+    "key": AUTH_COOKIE_NAME,
+    "httponly": True,
+    "max_age": TOKEN_TTL_SECONDS,
+    "expires": TOKEN_TTL_SECONDS,
+    "path": "/",
+    "secure": AUTH_COOKIE_SECURE,
+    "samesite": AUTH_COOKIE_SAMESITE,
+  }
+  if AUTH_COOKIE_DOMAIN:
+    settings["domain"] = AUTH_COOKIE_DOMAIN
+  return settings
 
 
 def _conn() -> sqlite3.Connection:
@@ -47,6 +112,18 @@ def normalize_username(username: str) -> str:
 
 def validate_username(username: str) -> bool:
   return bool(USERNAME_RE.fullmatch((username or "").strip()))
+
+
+def validate_password(password: str) -> None:
+  pw = password or ""
+  if len(pw) < 10:
+    raise ValueError("Password must be at least 10 characters.")
+  if len(pw) > 128:
+    raise ValueError("Password is too long.")
+  if not any(ch.isalpha() for ch in pw):
+    raise ValueError("Password must include at least one letter.")
+  if not any(ch.isdigit() for ch in pw):
+    raise ValueError("Password must include at least one number.")
 
 
 def _b64url_encode(raw: bytes) -> str:
@@ -126,10 +203,8 @@ def create_user(username: str, password: str) -> dict:
 
   if not validate_username(raw_username):
     raise ValueError("Username must be 3-32 chars and use only letters, numbers, '.', '_' or '-'.")
-  if len(pw) < 8:
-    raise ValueError("Password must be at least 8 characters.")
-  if len(pw) > 128:
-    raise ValueError("Password is too long.")
+
+  validate_password(pw)
 
   password_hash = hash_password(pw)
   with _conn() as con:
@@ -205,7 +280,11 @@ def decode_token(token: str) -> dict | None:
     signing_input,
     hashlib.sha256,
   ).digest()
-  actual_sig = _b64url_decode(part_c)
+
+  try:
+    actual_sig = _b64url_decode(part_c)
+  except Exception:
+    return None
 
   if not hmac.compare_digest(expected_sig, actual_sig):
     return None
@@ -228,3 +307,34 @@ def extract_bearer_token(authorization: str | None) -> str | None:
   if scheme.lower() != "bearer" or not token:
     return None
   return token.strip()
+
+
+def resolve_token(
+  authorization: str | None,
+  session_cookie: str | None,
+) -> str | None:
+  bearer = extract_bearer_token(authorization)
+  if bearer:
+    return bearer
+  if session_cookie and session_cookie.strip():
+    return session_cookie.strip()
+  return None
+
+
+def get_current_user_or_401(
+  authorization: str | None = Header(default=None),
+  session_cookie: str | None = Cookie(default=None, alias=AUTH_COOKIE_NAME),
+) -> dict:
+  token = resolve_token(authorization, session_cookie)
+  if not token:
+    raise HTTPException(status_code=401, detail="Authentication required.")
+
+  payload = decode_token(token)
+  if not payload:
+    raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+  user = get_user_by_id(int(payload["uid"]))
+  if not user:
+    raise HTTPException(status_code=401, detail="User not found.")
+
+  return user

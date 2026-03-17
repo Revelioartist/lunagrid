@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local data and secrets
+.env
+.env.*
+!.env.example
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/auth.db
+backend/*.db
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Editors and OS files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

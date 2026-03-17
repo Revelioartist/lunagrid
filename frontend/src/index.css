@@ -104,6 +104,10 @@
   --tech-orbit-spin: 0deg;
   --tech-orbit-pulse: 0;
   --text-selection-bg: rgb(0 200 255 / 0.28);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.16);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.26);
+  --scrollbar-width: thin;
 }
 
 .dark {
@@ -118,6 +122,31 @@
   --tech-orbit-soft: rgba(182, 157, 255, 0.2);
   --tech-stars: rgba(207, 188, 255, 0.34);
   --tech-noise: rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.18);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
+}
+
+.light {
+  --scrollbar-thumb: rgba(0, 0, 0, 0.16);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.26);
+}
+
+/* Paint viewport (area behind native scrollbar) with the same page background. */
+html,
+body {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, var(--tech-right-shade) 62%, var(--tech-right-shade) 100%),
+    radial-gradient(72rem 50rem at -8% -10%, var(--tech-peach-glow), transparent 63%),
+    radial-gradient(78rem 56rem at 41% 7%, var(--tech-violet-glow), transparent 60%),
+    radial-gradient(74rem 58rem at 90% 74%, var(--tech-blue-glow), transparent 68%),
+    linear-gradient(122deg, var(--tech-bg-a) 0%, var(--tech-bg-b) 48%, var(--tech-bg-c) 72%, var(--tech-bg-a) 100%);
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 
 ::selection {
@@ -456,26 +485,27 @@
 
 /* ===== Minimal Scrollbar (Theme) ===== */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  scrollbar-width: var(--scrollbar-width);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: var(--scrollbar-track);
+}
+*::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+*::-webkit-scrollbar-track-piece { background: var(--scrollbar-track); }
 *::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--scrollbar-thumb);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--scrollbar-thumb-hover);
   background-clip: content-box;
 }
-*::-webkit-scrollbar-corner { background: transparent; }
-
-.light * { scrollbar-color: rgba(0, 0, 0, 0.24) transparent; }
-.light *::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.16); background-clip: content-box; }
-.light *::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.26); background-clip: content-box; }
+*::-webkit-scrollbar-corner { background: var(--scrollbar-track); }
 
 /* ===== Reviews marquee ===== */
 @keyframes marquee {

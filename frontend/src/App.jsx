@@ -23,7 +23,7 @@ import { useTranslation } from "react-i18next";
 import { ListChecks, MousePointerClick } from "lucide-react";
 import AuthBar from "./components/AuthBar";
 import { setAppLanguage } from "./i18n";
-import { apiUrl } from "./lib/api";
+import { apiFetch, normalizeApiErrorMessage, readApiError } from "./lib/api";
 
 const IS_DEV = import.meta.env.DEV;
 const NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
@@ -708,16 +708,13 @@ export default function App() {
         const form = new FormData();
         form.append("file", file);
 
-        const res = await fetch(
-          apiUrl(`/api/preview?limit=25&lang=${i18n.language}`),
-          {
-            method: "POST",
-            body: form,
-            signal: ctrl.signal,
-          },
-        );
+        const res = await apiFetch(`/api/preview?limit=25&lang=${i18n.language}`, {
+          method: "POST",
+          body: form,
+          signal: ctrl.signal,
+        });
 
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) throw new Error(await readApiError(res));
         const json = await res.json();
         if (previewReqRef.current !== requestId) return;
         setPreviewData(json);
@@ -733,7 +730,11 @@ export default function App() {
               error_count: 1,
               warning_count: 0,
               errors: [
-                { row: 1, field: "Preview", message: String(e?.message || e) },
+                {
+                  row: 1,
+                  field: "Preview",
+                  message: normalizeApiErrorMessage(String(e?.message || e)),
+                },
               ],
               warnings: [],
             },
@@ -772,14 +773,13 @@ export default function App() {
       const form = new FormData();
       form.append("file", file);
 
-      const res = await fetch(apiUrl(`/api/clean?lang=${i18n.language}`), {
+      const res = await apiFetch(`/api/clean?lang=${i18n.language}`, {
         method: "POST",
         body: form,
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Clean failed");
+        throw new Error(await readApiError(res));
       }
 
       const blob = await res.blob();
@@ -798,7 +798,7 @@ export default function App() {
 
       setNotice("Downloaded ✅");
     } catch (err) {
-      alert("Error: " + (err?.message || err));
+      alert("Error: " + normalizeApiErrorMessage(err?.message || err));
     } finally {
       setLoading(false);
       if (IS_DEV) {
